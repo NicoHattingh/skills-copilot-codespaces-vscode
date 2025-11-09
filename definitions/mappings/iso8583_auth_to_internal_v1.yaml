@@ -1,0 +1,80 @@
+id: iso8583_auth_to_internal_v1
+description: Map ISO8583 authorization requests into internal payment requests
+from_message: discover_iso8583_auth_v1
+to_message: internal_payment_v1
+version: "1.0"
+mappings:
+  - id: rule_mti
+    from:
+      field: mti
+    to:
+      field: mti
+  - id: rule_stan
+    from:
+      field: stan
+    to:
+      field: stan
+  - id: rule_txn_timestamp
+    from:
+      field: txn_timestamp
+    to:
+      field: txn_timestamp
+  - id: rule_pan
+    from:
+      field: pan
+    to:
+      field: pan
+  - id: rule_bin
+    from:
+      field: pan
+    to:
+      field: bin
+    transform:
+      fn: derive_bin
+      args:
+        length: 6
+  - id: rule_amount_minor
+    from:
+      field: amount_minor
+    to:
+      field: amount_minor
+  - id: rule_currency
+    from:
+      field: currency_numeric
+    to:
+      field: currency_alpha
+    transform:
+      fn: iso4217_numeric_to_alpha
+  - id: rule_auth_code
+    from:
+      field: auth_code
+    to:
+      field: auth_code
+  - id: rule_merchant_id
+    to:
+      field: merchant_id
+    choose_from:
+      - when: "merchant_number != null"
+        from:
+          field: merchant_number
+      - when: "acceptor_id != null"
+        from:
+          field: acceptor_id
+      - when: "true"
+        const: UNKNOWN
+  - id: rule_channel
+    to:
+      field: channel
+    choose_from:
+      - when: "merchant_number != null"
+        const: POS
+      - when: "true"
+        const: UNKNOWN
+  - id: rule_approval_status
+    to:
+      field: approval_status
+    const: PENDING
+  - id: rule_response_code
+    to:
+      field: response_code
+    const: "00"

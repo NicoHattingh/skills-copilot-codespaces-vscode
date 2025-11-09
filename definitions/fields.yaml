@@ -1,0 +1,74 @@
+- id: mti
+  label: Message Type Indicator
+  type: string
+  description: ISO8583 message type indicator
+- id: pan
+  label: Primary Account Number
+  type: string
+  constraints:
+    min_length: 12
+    max_length: 19
+- id: amount_minor
+  label: Amount in Minor Units
+  type: integer
+  description: Transaction amount represented in minor currency units
+- id: currency_numeric
+  label: ISO4217 Numeric Currency Code
+  type: string
+  constraints:
+    length: 3
+- id: stan
+  label: System Trace Audit Number
+  type: string
+  constraints:
+    length: 6
+- id: auth_code
+  label: Authorization Code
+  type: string
+  constraints:
+    max_length: 8
+- id: merchant_number
+  label: Merchant Number
+  type: string
+- id: acceptor_id
+  label: Acceptor ID
+  type: string
+- id: txn_timestamp
+  label: Transaction Timestamp
+  type: datetime
+- id: bin
+  label: Bank Identification Number
+  type: string
+  constraints:
+    min_length: 6
+    max_length: 8
+- id: currency_alpha
+  label: ISO4217 Alpha Currency Code
+  type: string
+  constraints:
+    length: 3
+- id: merchant_id
+  label: Merchant Identifier
+  type: string
+- id: channel
+  label: Merchant Channel
+  type: string
+  constraints:
+    enum:
+      - POS
+      - ECOM
+      - MOTO
+      - UNKNOWN
+- id: approval_status
+  label: Approval Status
+  type: string
+  constraints:
+    enum:
+      - APPROVED
+      - DECLINED
+      - PENDING
+- id: response_code
+  label: Response Code
+  type: string
+  constraints:
+    length: 2

@@ -1,0 +1,17 @@
+id: discover_iso8583_auth_v1
+name: Discover ISO8583 Authorization Request
+version: "1.0"
+standard: iso8583
+layout:
+  - ref: mti
+  - ref: pan
+  - ref: amount_minor
+  - ref: currency_numeric
+  - ref: stan
+  - ref: auth_code
+  - ref: merchant_number
+  - ref: acceptor_id
+  - ref: txn_timestamp
+io_binding:
+  format_kind: iso8583
+  bindings: []

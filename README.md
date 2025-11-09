@@ -1,94 +1,110 @@
-<header>
+# ISO Mapper & Message Modeling Prototype
 
-<!--
-  <<< Author notes: Course header >>>
-  Read <https://skills.github.com/quickstart> for more information about how to build courses using this template.
-  Include a 1280×640 image, course name in sentence case, and a concise description in emphasis.
-  In your repository settings: enable template repository, add your 1280×640 social image, auto delete head branches.
-  Next to "About", add description & tags; disable releases, packages, & environments.
-  Add your open source license, GitHub uses the MIT license.
--->
+This repository contains a small, config-driven mapping engine and HTTP API prototype. It demonstrates how message layouts, field definitions, and mapping rules can be described with YAML files and executed at runtime without any vendor-specific coupling.
 
-# Code with GitHub Copilot
+The engine loads definitions from the `definitions/` directory, validates mapping sets, executes transform functions, and exposes an Express-based API for inspection and execution.
 
-_GitHub Copilot can help you code by offering autocomplete-style suggestions right in VS Code and Codespaces._
+## Getting started
 
-</header>
-
-<!--
-  <<< Author notes: Step 1 >>>
-  Choose 3-5 steps for your course.
-  The first step is always the hardest, so pick something easy!
-  Link to docs.github.com for further explanations.
-  Encourage users to open new tabs for steps!
--->
-
-## Step 1: Leverage Codespaces with VS Code for Copilot
-
-_Welcome to "Develop With AI Powered Code Suggestions Using GitHub Copilot and VS Code"! :wave:_
-
-GitHub Copilot is an AI pair programmer that helps you write code faster and with less work. It draws context from comments and code to suggest individual lines and whole functions instantly. GitHub Copilot is powered by OpenAI Codex, a generative pretrained language model created by OpenAI.
-
-**Copilot works with many code editors including VS Code, Visual Studio, JetBrains IDE, and Neovim.**
-
-Additionally, GitHub Copilot is trained on all languages that appear in public repositories. For each language, the quality of suggestions you receive may depend on the volume and diversity of training data for that language.
-
-Using Copilot inside a Codespace shows just how easy it is to get up and running with GitHub's suite of [Collaborative Coding](https://github.com/features#features-collaboration) tools.
-
-> **Note**
-> This skills exercise will focus on leveraging GitHub Codespace. It is recommended that you complete the GitHub skill, [Codespaces](https://github.com/skills/code-with-codespaces), before moving forward with this exercise.
-
-### :keyboard: Activity: Enable Copilot inside a Codespace
-
-**We recommend opening another browser tab to work through the following activities so you can keep these instructions open for reference.**
-
-Before you open up a codespace on a repository, you can create a development container and define specific extensions or configurations that will be used or installed in your codespace. Let's create this development container and add copilot to the list of extensions.
-
-1. Navigating back to your **Code** tab of your repository, click the **Add file** drop-down button, and then click `Create new file`.
-1. Type or paste the following in the empty text field prompt to name your file.
+1. Install dependencies:
+   ```bash
+   npm install
    ```
-   .devcontainer/devcontainer.json
+2. Compile the TypeScript sources:
+   ```bash
+   npm run build
    ```
-1. In the body of the new **.devcontainer/devcontainer.json** file, add the following content:
+3. Start the HTTP API:
+   ```bash
+   npm start
    ```
-   {
-       // Name this configuration
-       "name": "Codespace for Skills!",
-       "customizations": {
-           "vscode": {
-               "extensions": [
-                   "GitHub.copilot"
-               ]
-           }
-       }
-   }
-   ```
-1. Select the option to **Commit directly to the `main` branch**, and then click the **Commit new file** button.
-1. Navigate back to the home page of your repository by clicking the **Code** tab located at the top left of the screen.
-1. Click the **Code** button located in the middle of the page.
-1. Click the **Codespaces** tab on the box that pops up.
-1. Click the **Create codespace on main** button.
+   The server listens on port `3000` by default. Use the `PORT` environment variable to override the port.
 
-   **Wait about 2 minutes for the codespace to spin itself up.**
+During development you can use:
+```bash
+npm run dev
+```
+which starts the server directly with `ts-node`.
 
-1. Verify your codespace is running. The browser should contain a VS Code web-based editor and a terminal should be present such as the below:
-   ![Screen Shot 2023-03-09 at 9 09 07 AM](https://user-images.githubusercontent.com/26442605/224102962-d0222578-3f10-4566-856d-8d59f28fcf2e.png)
-1. The `copilot` extension should show up in the VS Code extension list. Click the extensions sidebar tab. You should see the following:
-   ![Screen Shot 2023-03-09 at 9 04 13 AM](https://user-images.githubusercontent.com/26442605/224102514-7d6d2f51-f435-401d-a529-7bae3ae3e511.png)
+## Definitions directory
 
-**Wait about 60 seconds then refresh your repository landing page for the next step.**
+The prototype ships with a set of proof-of-concept definitions:
 
-<footer>
+- `definitions/fields.yaml` – shared field catalogue.
+- `definitions/messages/` – message layouts for source and target messages.
+- `definitions/mappings/` – mapping rules that connect the messages.
 
-<!--
-  <<< Author notes: Footer >>>
-  Add a link to get support, GitHub status page, code of conduct, license link.
--->
+All files can be authored in either YAML or JSON. On startup the engine builds in-memory indexes for fields, messages, and mapping sets.
 
----
+## HTTP API
 
-Get help: [Post in our discussion board](https://github.com/orgs/skills/discussions/categories/code-with-copilot) &bull; [Review the GitHub status page](https://www.githubstatus.com/)
+| Endpoint | Description |
+| --- | --- |
+| `GET /health` | Liveness probe returning `{ "status": "ok" }`. |
+| `GET /mappings/:id` | Returns the raw mapping set definition. |
+| `POST /validate/:id` | Validates the mapping set identified by `id` and returns configuration errors or warnings. |
+| `POST /run` | Executes a mapping set using the logical JSON payload supplied in the request body. |
 
-&copy; 2023 GitHub &bull; [Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/code_of_conduct.md) &bull; [MIT License](https://gh.io/mit)
+### Example `POST /run`
 
-</footer>
+Request body:
+```json
+{
+  "mapping_set_id": "iso8583_auth_to_internal_v1",
+  "input": {
+    "mti": "0100",
+    "pan": "6011000990139424",
+    "amount_minor": 10000,
+    "currency_numeric": "840",
+    "stan": "123456",
+    "merchant_number": "M123456789",
+    "acceptor_id": "TERM001",
+    "auth_code": "",
+    "txn_timestamp": "2025-11-09T12:34:56Z"
+  }
+}
+```
+
+Example response snippet:
+```json
+{
+  "valid": true,
+  "output": {
+    "mti": "0100",
+    "stan": "123456",
+    "txn_timestamp": "2025-11-09T12:34:56Z",
+    "pan": "6011000990139424",
+    "bin": "601100",
+    "amount_minor": 10000,
+    "currency_alpha": "USD",
+    "auth_code": "",
+    "merchant_id": "M123456789",
+    "channel": "POS",
+    "approval_status": "PENDING",
+    "response_code": "00"
+  },
+  "warnings": [],
+  "errors": [],
+  "trace": [
+    { "ruleId": "rule_mti", "type": "direct", "fromField": "mti", "toField": "mti" },
+    { "ruleId": "rule_bin", "type": "transform", "fromField": "pan", "toField": "bin", "transformFn": "derive_bin" },
+    { "ruleId": "rule_channel", "type": "conditional", "toField": "channel" }
+  ]
+}
+```
+
+Warnings are non-blocking and do not prevent the `valid` flag from being `true`. The `trace` array records each rule that participated in the execution.
+
+## Transform registry
+
+The MVP transform registry bundles a few utility functions for demonstration purposes:
+
+- `minor_to_major(value, { scale })`
+- `iso4217_numeric_to_alpha(value)`
+- `derive_bin(pan, { length })`
+
+You can extend the registry by editing `src/transformRegistry.ts` and referencing the new function names inside mapping definitions.
+
+## Running tests
+
+This prototype does not yet include automated tests. Mapping behaviour can be validated via the `/run` endpoint or by importing the executor modules directly in your own scripts.
