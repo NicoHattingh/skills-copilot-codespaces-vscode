@@ -1,0 +1,32 @@
+id: internal_payment_v1
+name: Internal Payment Request
+version: "1.0"
+standard: internal
+layout:
+  - group: request
+    children:
+      - ref: mti
+      - ref: stan
+      - ref: txn_timestamp
+  - group: card
+    children:
+      - ref: pan
+      - ref: bin
+  - group: amount
+    children:
+      - ref: amount_minor
+      - ref: currency_alpha
+  - group: merchant
+    children:
+      - ref: merchant_id
+      - ref: channel
+  - group: decision
+    children:
+      - ref: approval_status
+      - ref: response_code
+      - ref: auth_code
+io_binding:
+  format_kind: json
+  bindings:
+    - layout_ref: request.mti
+      json_path: $.request.mti
